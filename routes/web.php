@@ -12,7 +12,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('dashboard', 'dashboard')->name('dashboard');
 });
 
-Route::resource('projects', ProjectController::class);
+Route::resource('projects', ProjectController::class)->only(['index', 'show']);
+Route::middleware('auth')->group(function () {
+    Route::resource('projects', ProjectController::class)->except(['index', 'show']);
+});
 Route::resource('projects.issues', IssueController::class)->shallow();
 
 // AJAX routes për tags
