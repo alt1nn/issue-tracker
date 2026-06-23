@@ -22,7 +22,7 @@ Route::resource('projects.issues', IssueController::class)->shallow();
 Route::post('issues/{issue}/tags/{tag}/attach', [IssueController::class, 'attachTag'])->name('issues.tags.attach');
 Route::delete('issues/{issue}/tags/{tag}/detach', [IssueController::class, 'detachTag'])->name('issues.tags.detach');
 
-// AJAX routes për comments
+// AJAX routes për comments 045827478
 Route::get('issues/{issue}/comments', [CommentController::class, 'index'])->name('issues.comments.index');
 Route::post('issues/{issue}/comments', [CommentController::class, 'store'])->name('issues.comments.store');
 
@@ -31,5 +31,7 @@ Route::resource('tags', TagController::class)->only(['index', 'store']);
 
 Route::post('issues/{issue}/members/{user}/attach', [IssueController::class, 'attachMember'])->name('issues.members.attach');
 Route::delete('issues/{issue}/members/{user}/detach', [IssueController::class, 'detachMember'])->name('issues.members.detach');
+
+Route::get('projects/{project}/issues/search', [IssueController::class, 'search'])->name('projects.issues.search');
 
 require __DIR__ . '/settings.php';

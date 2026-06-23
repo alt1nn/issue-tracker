@@ -71,4 +71,19 @@ class IssueController extends Controller
         return response()->json(['message' => 'Member detached']);
     }
 
+    public function search(Project $project)
+    {
+        $query = request('q');
+
+        $issues = $project->issues()
+            ->with('tags')
+            ->where(function ($q) use ($query) {
+                $q->where('title', 'like', "%{$query}%")
+                    ->orWhere('description', 'like', "%{$query}%");
+            })
+            ->latest()
+            ->get();
+
+        return response()->json($issues);
+    }
 }

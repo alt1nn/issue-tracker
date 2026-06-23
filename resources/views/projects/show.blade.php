@@ -37,6 +37,12 @@
         <h4>Issues</h4>
         <a href="{{ route('projects.issues.create', $project) }}" class="btn btn-primary btn-sm">+ New Issue</a>
     </div>
+    {{-- SEARCH --}}
+    <div class="mb-3">
+        <input type="text" id="search-input" class="form-control" placeholder="Search issues..."
+            value="{{ request('search') }}">
+    </div>
+    <div id="search-results"></div>
 
     {{-- Filters --}}
     <form method="GET" class="row g-2 mb-4">
@@ -112,3 +118,50 @@
 
     {{ $issues->links() }}
 @endsection
+
+@push('scripts')
+    <script>
+        const searchInput = document.getElementById('search-input');
+        const searchResults = document.getElementById('search-results');
+        const issuesTable = document.querySelector('.table');
+        const searchUrl = "{{ route('projects.issues.search', $project) }}";
+
+        let debounceTimer;
+
+        searchInput.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                const query = searchInput.value.trim();
+
+                if (query.length === 0) {
+                    searchResults.innerHTML = '';
+                    issuesTable.style.display = 'table';
+                    return;
+                }
+
+                issuesTable.style.display = 'none';
+
+                fetch(`${searchUrl}?q=${encodeURIComponent(query)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.length === 0) {
+                            searchResults.innerHTML = '<p class="text-muted">No issues found.</p>';
+                            return;
+                        }
+
+                        let html =
+                            '<table class="table table-hover"><thead><tr><th>Title</th><th>Status</th><th>Priority</th></tr></thead><tbody>';
+                        data.forEach(issue => {
+                            html += `<tr>
+                            <td><a href="/projects/issue-tracker/public/issues/${issue.id}">${issue.title}</a></td>
+                            <td><span class="badge bg-secondary">${issue.status}</span></td>
+                            <td>${issue.priority}</td>
+                        </tr>`;
+                        });
+                        html += '</tbody></table>';
+                        searchResults.innerHTML = html;
+                    });
+            }, 400);
+        });
+    </script>
+@endpush
