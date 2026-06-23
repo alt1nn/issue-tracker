@@ -26,4 +26,7 @@ Route::post('issues/{issue}/comments', [CommentController::class, 'store'])->nam
 // Tags
 Route::resource('tags', TagController::class)->only(['index', 'store']);
 
+Route::post('issues/{issue}/members/{user}/attach', [IssueController::class, 'attachMember'])->name('issues.members.attach');
+Route::delete('issues/{issue}/members/{user}/detach', [IssueController::class, 'detachMember'])->name('issues.members.detach');
+
 require __DIR__ . '/settings.php';

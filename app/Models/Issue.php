@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Comment;
 use App\Models\Tag;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -33,5 +34,10 @@ class Issue extends Model
     public function comments()
     {
         return $this->hasMany(Comment::class);
+    }
+
+    public function members()
+    {
+        return $this->belongsToMany(User::class, 'issue_user');
     }
 }

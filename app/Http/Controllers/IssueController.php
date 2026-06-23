@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreIssueRequest;
+use App\Http\Requests\UpdateIssueRequest;
 use App\Models\Issue;
 use App\Models\Project;
 use App\Models\Tag;
-use App\Http\Requests\StoreIssueRequest;
-use App\Http\Requests\UpdateIssueRequest;
+use App\Models\User;
 
 class IssueController extends Controller
 {
@@ -23,11 +24,11 @@ class IssueController extends Controller
 
     public function show(Issue $issue)
     {
-        $issue->load(['project', 'tags']);
+        $issue->load(['project', 'tags', 'members']);
         $allTags = Tag::all();
-        return view('issues.show', compact('issue', 'allTags'));
+        $allUsers = User::all();
+        return view('issues.show', compact('issue', 'allTags', 'allUsers'));
     }
-
     public function edit(Issue $issue)
     {
         return view('issues.edit', compact('issue'));
@@ -57,4 +58,17 @@ class IssueController extends Controller
         $issue->tags()->detach($tag->id);
         return response()->json(['message' => 'Tag detached']);
     }
+
+    public function attachMember(Issue $issue, User $user)
+    {
+        $issue->members()->syncWithoutDetaching([$user->id]);
+        return response()->json(['message' => 'Member attached', 'user' => $user]);
+    }
+
+    public function detachMember(Issue $issue, User $user)
+    {
+        $issue->members()->detach($user->id);
+        return response()->json(['message' => 'Member detached']);
+    }
+
 }

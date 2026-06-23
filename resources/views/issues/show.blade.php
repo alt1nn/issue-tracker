@@ -45,6 +45,51 @@
         </div>
     </div>
 
+    {{-- MEMBERS SECTION --}}
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <strong>Members</strong>
+            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#memberModal">
+                Manage Members
+            </button>
+        </div>
+        <div class="card-body" id="attached-members">
+            @forelse($issue->members as $member)
+                <span class="badge bg-primary me-1" id="member-badge-{{ $member->id }}">
+                    {{ $member->name }}
+                </span>
+            @empty
+                <span class="text-muted">No members assigned.</span>
+            @endforelse
+        </div>
+    </div>
+
+    {{-- MEMBER MODAL --}}
+    <div class="modal fade" id="memberModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Attach / Detach Members</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    @foreach ($allUsers as $user)
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>{{ $user->name }}</span>
+                            @if ($issue->members->contains($user))
+                                <button class="btn btn-sm btn-danger member-btn" data-user-id="{{ $user->id }}"
+                                    data-action="detach">Detach</button>
+                            @else
+                                <button class="btn btn-sm btn-success member-btn" data-user-id="{{ $user->id }}"
+                                    data-action="attach">Attach</button>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- TAG MODAL --}}
     <div class="modal fade" id="tagModal" tabindex="-1">
         <div class="modal-dialog">
@@ -163,7 +208,7 @@
                     }
                     document.getElementById('comment-errors').style.display = 'none';
                     document.getElementById('comments-list').insertAdjacentHTML('afterbegin', commentHtml(
-                    data));
+                        data));
                     document.getElementById('author_name').value = '';
                     document.getElementById('body').value = '';
                 });
@@ -176,6 +221,25 @@
                 const method = action === 'attach' ? 'POST' : 'DELETE';
 
                 fetch(`${baseTagUrl}/${tagId}/${action}`, {
+                        method: method,
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        }
+                    })
+                    .then(res => res.json())
+                    .then(() => location.reload());
+            });
+        });
+
+        const baseMemberUrl = "{{ url('issues/' . $issue->id . '/members') }}";
+
+        document.querySelectorAll('.member-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const userId = btn.dataset.userId;
+                const action = btn.dataset.action;
+                const method = action === 'attach' ? 'POST' : 'DELETE';
+
+                fetch(`${baseMemberUrl}/${userId}/${action}`, {
                         method: method,
                         headers: {
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
