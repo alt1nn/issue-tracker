@@ -102,9 +102,10 @@
 @push('scripts')
     <script>
         const issueId = {{ $issue->id }};
-        let nextPageUrl = `/issues/${issueId}/comments?page=1`;
+        const baseCommentsUrl = "{{ route('issues.comments.index', $issue) }}";
+        const baseTagUrl = "{{ url('issues/' . $issue->id . '/tags') }}";
+        let nextPageUrl = baseCommentsUrl + '?page=1';
 
-        // Load comments
         function loadComments(url) {
             fetch(url)
                 .then(res => res.json())
@@ -124,25 +125,24 @@
 
         function commentHtml(comment) {
             return `
-            <div class="card mb-2">
-                <div class="card-body">
-                    <strong>${comment.author_name}</strong>
-                    <small class="text-muted ms-2">${comment.created_at}</small>
-                    <p class="mb-0 mt-1">${comment.body}</p>
-                </div>
-            </div>`;
+        <div class="card mb-2">
+            <div class="card-body">
+                <strong>${comment.author_name}</strong>
+                <small class="text-muted ms-2">${comment.created_at}</small>
+                <p class="mb-0 mt-1">${comment.body}</p>
+            </div>
+        </div>`;
         }
 
         loadComments(nextPageUrl);
 
         document.getElementById('load-more').addEventListener('click', () => loadComments(nextPageUrl));
 
-        // Submit comment
         document.getElementById('submit-comment').addEventListener('click', () => {
             const author_name = document.getElementById('author_name').value;
             const body = document.getElementById('body').value;
 
-            fetch(`/issues/${issueId}/comments`, {
+            fetch(baseCommentsUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -169,14 +169,13 @@
                 });
         });
 
-        // Tag attach/detach
         document.querySelectorAll('.tag-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const tagId = btn.dataset.tagId;
                 const action = btn.dataset.action;
                 const method = action === 'attach' ? 'POST' : 'DELETE';
 
-                fetch(`/issues/${issueId}/tags/${tagId}/${action}`, {
+                fetch(`${baseTagUrl}/${tagId}/${action}`, {
                         method: method,
                         headers: {
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
